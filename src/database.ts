@@ -1,3 +1,4 @@
+import { Console } from "console";
 import { TUser, TPurchase, TProduct, Category } from "./types";
 
 export const Users: TUser[] = [
@@ -116,5 +117,38 @@ export const getAllProducts = () => {
 export const getProductById = (idToSearch: string) => {
     const foundProductId = Products.filter((item) => item.id === idToSearch)
     
-    foundProductId.length === 0 ? "Produto não encontrado!" : "Produto encontrado: " + foundProductId
+    foundProductId.length === 0 ? console.log("Produto não encontrado!") : console.log("Produto encontrado:" + foundProductId)
+}
+
+
+// BUSCA PRODUTOS SE BASEANDO EM UMA LISTA (PRODUCTS)
+
+export const queryProductsByName  = (q: string) => {
+    const foundProductId = Products.filter((item) => item.name.toLowerCase() === q)
+    
+    foundProductId.length == 0 ? console.log("Produto não encontrado!") : console.log("Produto encontrado:" + foundProductId)
+}
+
+
+// CRIA UMA COMPRA (PURCHASE)
+
+export const createPurchase  = (userId: string, productId: string, quantity: number) => {
+    Purchase.push({
+        userId: userId, 
+        productId: productId, 
+        quantity: quantity, 
+        totalPrice: quantity * Products[2].price
+    })
+    
+    console.log("Compra realizada com sucesso!")
+}
+
+
+// BUSCA TODAS AS COMPRAS FEITAS PELO USERID
+
+export const getAllPurchasesFromUserId   = (userIdToSearch: string) => {
+    const foundProductId = Purchase.filter((item) => item.userId === userIdToSearch)
+    
+    foundProductId.length == 0 ? console.log("Usuário não encontrado!") : console.log("Usuário Encontrado:" + foundProductId)
+
 }
