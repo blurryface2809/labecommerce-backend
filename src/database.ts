@@ -1,4 +1,3 @@
-import { Console } from "console";
 import { TUser, TPurchase, TProduct, Category } from "./types";
 
 export const Users: TUser[] = [
