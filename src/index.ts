@@ -22,7 +22,7 @@ app.get('/ping', (req: Request, res: Response) => {
 app.get('/users', async (req: Request, res: Response) => {
     try {
         const users = await db("users")
-        const frescura = users.map((user)=>{
+        const usersMap = users.map((user)=>{
             return({
             id:user.id,
             name:user.name,
@@ -33,7 +33,7 @@ app.get('/users', async (req: Request, res: Response) => {
         
 
         })
-            res.status(200).send(frescura)
+            res.status(200).send(usersMap)
     } catch (error) {
         console.log(error)
         if (req.statusCode === 200) {
@@ -72,34 +72,34 @@ app.post('/users', async (req: Request, res: Response) => {
 
         if ( id[0] !== "a") {
             res.status(404)
-            throw new Error ("todos os ids devem iniciar com a letra 'a'!!")
+            throw new Error ("todos os ids de usuários devem se iniciar com a letra 'a'!!")
         }
 
         if ( name.length < 2) {
             res.status(404)
-            throw new Error ("todos os nomes devem ter pelo menos dois caracteres")
+            throw new Error ("todos os nomes devem ter pelo menos dois caracteres!!")
         }
 
         if (!password.match(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^\da-zA-Z]).{8,12}$/g)) {
             res.status(404)
-            throw new Error("ERRO: Password deve possuir entre 8 e 12 caracteres, com letras maiúsculas e minúsculas e no mínimo um número e um caractere especial")
+            throw new Error("ERRO: Password deve possuir entre 8 e 12 caracteres, com letras maiúsculas e minúsculas e no mínimo um número e um caractere especial!!")
         }
 
         if (!email.match(/^[\w-.]+@([\w-]+.)+[\w-]{2,4}$/g)) {
             res.status(404)
-            throw new Error("ERRO: Email deve ter o formato 'exemplo@exemplo.com'.")
+            throw new Error("ERRO: Email deve ter o formato 'exemplo@exemplo.com'!!")
         }
 
         const [findId] = await db("users").where({id})
         if (findId) {
             res.status(422)
-            throw new Error("Id já cadastrada!")
+            throw new Error("Id já cadastrada!!")
         }
 
         const [findEmail] = await db("users").where({email})
         if (findEmail) {
             res.status(422)
-            throw new Error("Email já cadastrado!")
+            throw new Error("Email já cadastrado!!")
         }
 
         const newUser = {id,name,email,password}
@@ -107,8 +107,61 @@ app.post('/users', async (req: Request, res: Response) => {
 
         
             res.status(201).send({
-                message: "Cadastro realizado com sucesso"
+                message: "Cadastro realizado com sucesso!! :D"
             })
+
+    } catch (error) {
+        console.log(error)
+        if (req.statusCode === 200) {
+            res.status(500)
+        }
+        if (error instanceof Error) {
+            res.send(error.message)
+        } else {
+            res.send("Erro inesperado")
+        }
+    }
+})
+
+// REQUISIÇÃO CREATEPRODUCT
+
+app.post('/products', async (req: Request, res: Response) => {
+    try {
+        const id = req.body.id as string 
+        const name = req.body.name as string
+        const price = req.body.price as number
+        const description = req.body.description as string 
+        const image_url = req.body.image_url as string
+
+
+        if (!id || !name || !price || !description || !image_url) {
+            res.status(404)
+            throw new Error ("todos os dados são obrigatórios!!")
+        }
+
+        if ( typeof id !== "string" || typeof name !== "string" || typeof price !== "number" || typeof description !== "string" || typeof image_url !== "string"){
+            res.status(404)
+            throw new Error ("todos os dados, exceto 'price' (number), devem ser do tipo string!!")
+        }
+
+        if ( id[0] !== "p") {
+            res.status(404)
+            throw new Error ("todos os ids de produtos devem se iniciar com a letra 'p'!!")
+        }
+
+        const [findId] = await db("products").where({id})
+        if (findId) {
+            res.status(422)
+            throw new Error("Id já cadastrada!")
+        }
+
+        const newProduct = {id,name,price,description,image_url}
+        await db("products").insert(newProduct)
+            
+            res.status(201).send({
+            message: "Produto cadastrado com sucesso!! :D"
+            })
+
 
     } catch (error) {
         console.log(error)
@@ -125,11 +178,39 @@ app.post('/users', async (req: Request, res: Response) => {
 
 
 
+
 // REQUISIÇÃO GETALLPRODUCTS
 
-app.get('/products', (req: Request, res: Response) => {
-    res.status(200).send(Products)
+app.get('/products', async (req: Request, res: Response) => {
+    try {
+        const products = await db("products")
+        const productsMap = products.map((product)=>{
+            return({
+            id:product.id,
+            name:product.name,
+            price:product.price,
+            description:product.description,
+            image_url:product.image_url
+        })
+        
+
+        })
+            res.status(200).send(productsMap)
+
+
+    } catch (error) {
+        console.log(error)
+        if (req.statusCode === 200) {
+            res.status(500)
+        }
+        if (error instanceof Error) {
+            res.send(error.message)
+        } else {
+            res.send("Erro inesperado")
+        }
+    }
 })
+
 
 
 // REQUISIÇÃO SEARCHPRODUCTBYNAME
@@ -139,4 +220,22 @@ app.get('/product/search', (req: Request, res: Response) => {
     console.log(q)
     res.status(200).send(Products)
 })
+
+
+// REQUISIÇÃO EDITPRODUCTBYID
+
+
+
+// REQUISIÇÃO CREATE PURCHASE
+
+
+
+// REQUISIÇÃO DELETEPURCHASEBYID
+
+
+
+// REQUISIÇÃO GETPURCHASEBYID
+
+
+
 
