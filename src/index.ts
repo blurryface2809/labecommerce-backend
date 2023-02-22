@@ -1,6 +1,6 @@
 import { db } from './database/knex';
 import { Users, Products, Purchase } from './database'
-import { TUser, TProduct, TPurchase, Category } from './types'
+import { TUser, TProduct, TPurchase, Category, ProductsToBuy } from './types'
 import express, { Request, Response } from 'express'
 import cors from 'cors'
 
@@ -179,10 +179,11 @@ app.post('/products', async (req: Request, res: Response) => {
 
 
 
-// REQUISIÇÃO GETALLPRODUCTS
+// REQUISIÇÃO GETALLPRODUCTS & REQUISIÇÃO SEARCHPRODUCTBYNAME
 
 app.get('/products', async (req: Request, res: Response) => {
     try {
+        const q = req.query.q as string | undefined
         const products = await db("products")
         const productsMap = products.map((product)=>{
             return({
@@ -190,12 +191,244 @@ app.get('/products', async (req: Request, res: Response) => {
             name:product.name,
             price:product.price,
             description:product.description,
-            image_url:product.image_url
+            imageUrl:product.image_url
+            })
+        
         })
+        console.log(q)
+        
+        if(q===undefined){
+            res.status(200).send(productsMap)
+        }else{
+            const productFilter = productsMap.filter((product)=>{
+                return product.name.toLowerCase().includes(q.toLowerCase())
+            })
+            res.status(200).send(productFilter)
+        }
+
+    } catch (error) {
+        console.log(error)
+        if (req.statusCode === 200) {
+            res.status(500)
+        }
+        if (error instanceof Error) {
+            res.send(error.message)
+        } else {
+            res.send("Erro inesperado")
+        }
+    }
+})
+
+
+// REQUISIÇÃO EDITPRODUCTBYID
+
+app.put('/products/:id', async (req: Request, res: Response) => {
+    try {
+        const idToEdit = req.params.id as string 
+        
+        if (idToEdit === ":id") {
+            res.status(404) 
+            throw new Error ("Informe um id válido!!")
+        }
+
+        const [findId] = await db("products").where({id:idToEdit})
+        
+        if (!findId) {
+            res.status(422)
+            throw new Error("Id não cadastrada!!")
+        }
+
+
+        const newId = req.body.id as string | undefined 
+        const newName = req.body.name as string | undefined
+        const newPrice = req.body.price as number | undefined
+        const newDescription = req.body.description as string | undefined 
+        const newImageUrl = req.body.imageUrl as string | undefined
+
+        if (newId && typeof newId !== "string") {
+            res.status(404)
+            throw new Error("A Id tem que ser uma string!!")
+        }
+
+        if (newName && typeof newName !== "string") {
+            res.status(404)
+            throw new Error("O Name tem que ser uma string!!")
+        }
+
+        if (newPrice && typeof newPrice !== "number") {
+            res.status(404)
+            throw new Error("O Price tem que ser um Number!!")
+        }
+
+        if (newDescription && typeof newDescription !== "string") {
+            res.status(404)
+            throw new Error("A description tem que ser uma string!!")
+        }
+        
+        if (newImageUrl && typeof newImageUrl !== "string") {
+            res.status(404)
+            throw new Error("A ImageUrl tem que ser uma string!!")
+        }
+
+        if (newId && newId[0] !== "p") {
+            res.status(404)
+            throw new Error ("todos os ids de produtos devem se iniciar com a letra 'p'!!")
+        }
+
+        if(newId){
+            const [findNewId] = await db("products").where({id:newId})
+        if (findNewId) {
+            res.status(422)
+            throw new Error("Id já cadastrada!")
+        }
+        }
         
 
+        const newProduct = {
+            id:newId || findId.id,
+            name:newName || findId.name,
+            price:newPrice || findId.price,
+            description:newDescription || findId.description,
+            image_url:newImageUrl || findId.image_url
+        }
+            await db("products").update(newProduct).where({id:idToEdit})
+            
+            res.status(200).send({
+            message: "Produto atualizado com sucesso!! :D"
+            })
+
+
+    } catch (error) {
+        console.log(error)
+        if (req.statusCode === 200) {
+            res.status(500)
+        }
+        if (error instanceof Error) {
+            res.send(error.message)
+        } else {
+            res.send("Erro inesperado")
+        }
+    }
+})
+
+
+// REQUISIÇÃO GETALLPRODUCTS & REQUISIÇÃO SEARCHPRODUCTBYNAME
+
+app.get('/products', async (req: Request, res: Response) => {
+    try {
+        const q = req.query.q as string | undefined
+        const products = await db("products")
+        const productsMap = products.map((product)=>{
+            return({
+            id:product.id,
+            name:product.name,
+            price:product.price,
+            description:product.description,
+            imageUrl:product.image_url
+            })
+        
         })
+        console.log(q)
+        
+        if(q===undefined){
             res.status(200).send(productsMap)
+        }else{
+            const productFilter = productsMap.filter((product)=>{
+                return product.name.toLowerCase().includes(q.toLowerCase())
+            })
+            res.status(200).send(productFilter)
+        }
+
+    } catch (error) {
+        console.log(error)
+        if (req.statusCode === 200) {
+            res.status(500)
+        }
+        if (error instanceof Error) {
+            res.send(error.message)
+        } else {
+            res.send("Erro inesperado")
+        }
+    }
+})
+
+
+// REQUISIÇÃO EDITPRODUCTBYID
+
+app.put('/products/:id', async (req: Request, res: Response) => {
+    try {
+        const idToEdit = req.params.id as string 
+        
+        if (idToEdit === ":id") {
+            res.status(404) 
+            throw new Error ("Informe um id válido!!")
+        }
+
+        const [findId] = await db("products").where({id:idToEdit})
+        
+        if (!findId) {
+            res.status(422)
+            throw new Error("Id não cadastrada!!")
+        }
+
+
+        const newId = req.body.id as string | undefined 
+        const newName = req.body.name as string | undefined
+        const newPrice = req.body.price as number | undefined
+        const newDescription = req.body.description as string | undefined 
+        const newImageUrl = req.body.imageUrl as string | undefined
+
+        if (newId && typeof newId !== "string") {
+            res.status(404)
+            throw new Error("A Id tem que ser uma string!!")
+        }
+
+        if (newName && typeof newName !== "string") {
+            res.status(404)
+            throw new Error("O Name tem que ser uma string!!")
+        }
+
+        if (newPrice && typeof newPrice !== "number") {
+            res.status(404)
+            throw new Error("O Price tem que ser um Number!!")
+        }
+
+        if (newDescription && typeof newDescription !== "string") {
+            res.status(404)
+            throw new Error("A description tem que ser uma string!!")
+        }
+        
+        if (newImageUrl && typeof newImageUrl !== "string") {
+            res.status(404)
+            throw new Error("A ImageUrl tem que ser uma string!!")
+        }
+
+        if (newId && newId[0] !== "p") {
+            res.status(404)
+            throw new Error ("todos os ids de produtos devem se iniciar com a letra 'p'!!")
+        }
+
+        if(newId){
+            const [findNewId] = await db("products").where({id:newId})
+        if (findNewId) {
+            res.status(422)
+            throw new Error("Id já cadastrada!")
+        }
+        }
+        
+
+        const newProduct = {
+            id:newId || findId.id,
+            name:newName || findId.name,
+            price:newPrice || findId.price,
+            description:newDescription || findId.description,
+            image_url:newImageUrl || findId.image_url
+        }
+            await db("products").update(newProduct).where({id:idToEdit})
+            
+            res.status(200).send({
+            message: "Produto atualizado com sucesso!! :D"
+            })
 
 
     } catch (error) {
@@ -213,20 +446,120 @@ app.get('/products', async (req: Request, res: Response) => {
 
 
 
-// REQUISIÇÃO SEARCHPRODUCTBYNAME
+// REQUISIÇÃO CREATE PURCHASE
 
-app.get('/product/search', (req: Request, res: Response) => {
-    const q = req.query.q
-    console.log(q)
-    res.status(200).send(Products)
+app.post('/purchases', async (req: Request, res: Response) => {
+    try {
+        const id = req.body.id as string 
+        const buyer = req.body.buyer as string
+        const products = req.body.products as ProductsToBuy[]
+
+        if (!id || !buyer) {
+            res.status(404)
+            throw new Error ("todos os dados são obrigatórios!!")
+        }
+
+        if(!products || products.length===0){
+            res.status(404)
+            throw new Error ("Produtos não pode estar vazio!!")
+        }
+
+        if ( typeof id !== "string" || typeof buyer !== "string" ){
+            res.status(404)
+            throw new Error ("todos os dados devem ser do tipo string!!")
+        }
+
+        if ( id[0] !== "d") {
+            res.status(404)
+            throw new Error ("todos os ids de purchases devem se iniciar com a letra 'd'!!")
+        }
+
+        const [findId] = await db("purchases").where({id})
+        if (findId) {
+            res.status(422)
+            throw new Error("Id já cadastrada!")
+        }
+
+        const [findBuyer] = await db("users").where({id:buyer})
+        if (!findBuyer) {
+            res.status(422)
+            throw new Error("Usuário não cadastrado!")
+        }
+
+        products.map(  (product)=>{
+            if(!product.productId || typeof product.productId !== "string"){
+                res.status(422)
+                throw new Error("Informe um Id em string!!")
+            }
+            
+            if(!product.quantity || typeof product.quantity !== "number" ){
+                res.status(422)
+                throw new Error("Informe uma quantity em number!!")
+            }
+        })
+        
+        products.map(async(product)=>{
+        const [findProduct] = await db("products").where({id:product.productId})
+                        if(!findProduct){
+                            res.status(422)
+                            throw new Error("Produto não econtrado!!")
+                        }})
+
+        // const newProduct = {id,name,price,description,image_url}
+        // await db("products").insert(newProduct)
+            
+            res.status(201).send({
+            message: "Produto cadastrado com sucesso!! :D"
+            })
+
+
+    } catch (error) {
+        console.log(error)
+        if (req.statusCode === 200) {
+            res.status(500)
+        }
+        if (error instanceof Error) {
+            res.send(error.message)
+        } else {
+            res.send("Erro inesperado")
+        }
+    }
 })
 
 
-// REQUISIÇÃO EDITPRODUCTBYID
+// {
+//     "id": "pur001",
+//     "buyer": "u001",
+//     "totalPrice": 1400,
+//     "products": [
+//         {
+//             "id": "prod001",
+//             "name": "Mouse gamer",
+//             "price": 250,
+//             "description": "Melhor mouse do mercado!",
+//             "imageUrl": "https://picsum.photos/seed/Mouse%20gamer/400",
+//             "quantity": 2
+//         },
+//         {
+//             "id": "prod002",
+//             "name": "Monitor",
+//             "price": 900,
+//             "description": "Monitor LED Full HD 24 polegadas",
+//             "imageUrl": "https://picsum.photos/seed/Monitor/400",
+//             "quantity": 1
+//         }
+//     ]
+// }
+
+// // Response
+// // status 201 CREATED
+// {
+//     message: "Pedido realizado com sucesso"
+// }
 
 
 
-// REQUISIÇÃO CREATE PURCHASE
+
 
 
 
@@ -235,7 +568,3 @@ app.get('/product/search', (req: Request, res: Response) => {
 
 
 // REQUISIÇÃO GETPURCHASEBYID
-
-
-
-
