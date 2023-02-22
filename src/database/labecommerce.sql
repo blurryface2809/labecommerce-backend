@@ -15,14 +15,16 @@ DROP TABLE users;
 
 CREATE TABLE purchases (
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
-    buyer TEXT FOREIGN KEY NOT NULL,
-    total_price REAL NOT NULL, 
+    buyer TEXT NOT NULL,
+    total_price REAL NOT NULL,
     created_at TEXT DEFAULT (DATETIME()) NOT NULL,
-    paid INTEGER NOT NULL
+    paid INTEGER DEFAULT(0) NOT NULL,
+    FOREIGN KEY (buyer) REFERENCES users(id)
 );
 
-
-
+INSERT INTO purchases (id,buyer,total_price)
+VALUES("d01","a01",50);
+SELECT * FROM purchases;
 
 CREATE TABLE products (
     id TEXT PRIMARY KEY UNIQUE NOT NULL,

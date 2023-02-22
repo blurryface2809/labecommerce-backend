@@ -51,3 +51,7 @@ export type TPurchase = {
     totalPrice: number
 };
 
+export type ProductsToBuy = {
+    productId: string,
+    quantity: number
+}
