@@ -11,6 +11,8 @@ SELECT * FROM users;
 INSERT INTO users (id,name,email,password)
 VALUES("a01","PEPEP","PEPEP@EMAIL.COM","12345");
 DROP TABLE users;
+
+
 CREATE TABLE purchases (
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
     buyer TEXT FOREIGN KEY NOT NULL,
@@ -19,6 +21,9 @@ CREATE TABLE purchases (
     paid INTEGER NOT NULL
 );
 
+
+
+
 CREATE TABLE products (
     id TEXT PRIMARY KEY UNIQUE NOT NULL,
     name TEXT NOT NULL,
@@ -26,6 +31,14 @@ CREATE TABLE products (
     description TEXT NOT NULL,
     image_url TEXT NOT NULL
 );
+
+SELECT * FROM products;
+INSERT INTO products (id,name,price,description,image_url)
+VALUES("p01","Tamagotchi",10,"Bichinho Virtual","https://picsum.photos/200/300");
+DROP TABLE products;
+
+
+
 
 CREATE TABLE purchases_products (
     purchase_id TEXT FOREIGN KEY NOT NULL,
