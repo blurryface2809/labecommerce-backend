@@ -43,8 +43,11 @@ DROP TABLE products;
 
 
 CREATE TABLE purchases_products (
-    purchase_id TEXT FOREIGN KEY NOT NULL,
-    product_id TEXT FOREIGN KEY NOT NULL,
-    quantity INTEGER NOT NULL
+    purchase_id TEXT NOT NULL,
+    product_id TEXT NOT NULL,
+    quantity INTEGER NOT NULL,
+    FOREIGN KEY(purchase_id) REFERENCES purchases(id)
+    FOREIGN KEY(product_id) REFERENCES products(id)
 );
 
+SELECT * FROM purchases_products;
